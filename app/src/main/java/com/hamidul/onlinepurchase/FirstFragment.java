@@ -7,6 +7,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +41,8 @@ public class FirstFragment extends Fragment {
     ArrayList arrayList = new ArrayList();
     LottieAnimationView animationView;
     SearchView searchView;
+    SwipeRefreshLayout swipeRefreshLayout;
+    ImageView search;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View myView = inflater.inflate(R.layout.fragment_first, container, false);
@@ -48,8 +51,24 @@ public class FirstFragment extends Fragment {
         recyclerView = myView.findViewById(R.id.recyclerView);
         animationView = myView.findViewById(R.id.animationView);
         searchView = myView.findViewById(R.id.searchView);
+        swipeRefreshLayout = myView.findViewById(R.id.swipeRefreshLayout);
+        search = myView.findViewById(R.id.search);
 
         loadData();
+
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadData();
+            }
+        });
 
         return myView;
     }
@@ -64,6 +83,7 @@ public class FirstFragment extends Fragment {
             @Override
             public void onResponse(JSONArray response) {
                 progressBar.setVisibility(View.GONE);
+                swipeRefreshLayout.setRefreshing(false);
                 for (int x = 0; x<response.length(); x++){
                     try {
                         JSONObject jsonObject = response.getJSONObject(x);
@@ -109,6 +129,7 @@ public class FirstFragment extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
         RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
@@ -126,23 +147,6 @@ public class FirstFragment extends Fragment {
             this.filterList = new ArrayList<>(itemList);
         }
 
-        private class myViewHolder extends RecyclerView.ViewHolder{
-            ImageView imageView;
-            TextView name,weight,price;
-            LottieAnimationView lottieAnimationView;
-            public myViewHolder(@NonNull View itemView) {
-                super(itemView);
-
-                imageView = itemView.findViewById(R.id.imageView);
-                name = itemView.findViewById(R.id.tvName);
-                weight = itemView.findViewById(R.id.tvWeight);
-                price = itemView.findViewById(R.id.tvPrice);
-                lottieAnimationView = itemView.findViewById(R.id.lottieAnimationView);
-
-            }
-        }
-
-
         @NonNull
         @Override
         public FirstFragment.MyAdapter.myViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -152,14 +156,43 @@ public class FirstFragment extends Fragment {
             return new myViewHolder(myView);
         }
 
+        private class myViewHolder extends RecyclerView.ViewHolder{
+            ImageView imageView;
+            TextView name,weight,price;
+            LottieAnimationView lottieAnimationView;
+            LinearLayout addCart;
+            public myViewHolder(@NonNull View itemView) {
+                super(itemView);
+
+                imageView = itemView.findViewById(R.id.imageView);
+                name = itemView.findViewById(R.id.tvName);
+                weight = itemView.findViewById(R.id.tvWeight);
+                price = itemView.findViewById(R.id.tvPrice);
+                lottieAnimationView = itemView.findViewById(R.id.lottieAnimationView);
+                addCart = itemView.findViewById(R.id.addCart);
+
+            }
+        }
+
         @Override
         public void onBindViewHolder(@NonNull FirstFragment.MyAdapter.myViewHolder holder, int position) {
 
             hashMap = (HashMap<String, String>) filterList.get(position);
 
-            holder.name.setText(hashMap.get("name"));
-            holder.weight.setText(hashMap.get("weight"));
-            holder.price.setText("BDT : "+hashMap.get("price"));
+            String name = hashMap.get("name");
+            String weight = hashMap.get("weight");
+            String price = hashMap.get("price");
+
+            holder.name.setText(name);
+            holder.weight.setText(weight);
+            holder.price.setText("BDT : "+price);
+
+//            holder.addCart.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//
+//                }
+//            });
 
             Picasso.get().load(hashMap.get("image")).into(holder.imageView, new Callback() {
                 @Override
@@ -187,6 +220,7 @@ public class FirstFragment extends Fragment {
             filterList.clear();
             if (query.isEmpty()){
                 filterList.addAll(itemList);
+                searchView.setVisibility(View.GONE);
             }else {
                 for (HashMap<String,String> item : itemList){
                     if (item.get("name").toLowerCase().contains(query)  || item.get("weight").toLowerCase().contains(query)){

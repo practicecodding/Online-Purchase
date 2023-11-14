@@ -44,4 +44,5 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.8")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("com.airbnb.android:lottie:6.1.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
 }
