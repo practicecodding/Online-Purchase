@@ -11,8 +11,6 @@
         android:layout_margin="10dp"
         app:cardCornerRadius="10dp"
         app:cardElevation="5dp"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground"
         android:background="@color/white"
         >
 
@@ -47,6 +45,8 @@
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:layout_marginTop="5dp"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
                 />
 
             <TextView

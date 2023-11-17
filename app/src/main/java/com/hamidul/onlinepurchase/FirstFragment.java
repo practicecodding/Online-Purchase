@@ -3,18 +3,26 @@ package com.hamidul.onlinepurchase;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.android.volley.DefaultRetryPolicy;
@@ -40,37 +48,92 @@ public class FirstFragment extends Fragment {
     HashMap<String ,String > hashMap;
     ArrayList arrayList = new ArrayList();
     LottieAnimationView animationView;
-    SearchView searchView;
     SwipeRefreshLayout swipeRefreshLayout;
-    ImageView search;
+    Toolbar toolbar;
+    public static MyAdapter myAdapter;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        setHasOptionsMenu(true);
+
         View myView = inflater.inflate(R.layout.fragment_first, container, false);
 
         progressBar = myView.findViewById(R.id.progressBar);
         recyclerView = myView.findViewById(R.id.recyclerView);
         animationView = myView.findViewById(R.id.animationView);
-        searchView = myView.findViewById(R.id.searchView);
-        swipeRefreshLayout = myView.findViewById(R.id.swipeRefreshLayout);
-        search = myView.findViewById(R.id.search);
+        //swipeRefreshLayout = myView.findViewById(R.id.swipeRefreshLayout);
+        toolbar = myView.findViewById(R.id.toolBar);
+
+        // Set the Toolbar as the ActionBar for this fragment
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        if (activity != null) {
+            activity.setSupportActionBar(toolbar);
+        }
 
         loadData();
 
-        search.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                searchView.setVisibility(View.VISIBLE);
-            }
-        });
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                loadData();
-            }
-        });
+//        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                loadData();
+//            }
+//        });
 
         return myView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+
+        inflater.inflate(R.menu.search_menu,menu);
+
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        MenuItem addCart = menu.findItem(R.id.addCart);
+
+        if (addCart==null){
+            Toast.makeText(getActivity(), "Clicked cart item", Toast.LENGTH_SHORT).show();
+        }
+
+        if (searchItem!=null){
+
+            View myView = LayoutInflater.from(getActivity()).inflate(R.layout.custom_search_view,null);
+
+            SearchView searchView = myView.findViewById(R.id.searchView);
+
+            searchItem.setActionView(myView);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    myAdapter.filter(newText);
+                    return true;
+                }
+            });
+
+            searchView.requestFocus();
+
+        }
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId()==R.id.addCart){
+            MainActivity.backButton = "cart";
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.frameLayout,new SecondFragment());
+            //fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void loadData(){
@@ -83,7 +146,7 @@ public class FirstFragment extends Fragment {
             @Override
             public void onResponse(JSONArray response) {
                 progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
+                //swipeRefreshLayout.setRefreshing(false);
                 for (int x = 0; x<response.length(); x++){
                     try {
                         JSONObject jsonObject = response.getJSONObject(x);
@@ -105,31 +168,17 @@ public class FirstFragment extends Fragment {
                         throw new RuntimeException(e);
                     }
                 }// for loop end
-                MyAdapter myAdapter = new MyAdapter(arrayList);
+                myAdapter = new MyAdapter(arrayList);
                 recyclerView.setAdapter(myAdapter);
                 recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),2));
-//                recyclerView.setHasFixedSize(true);
-//                recyclerView.setHasFixedSize(true);
-
-                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String newText) {
-                        myAdapter.filter(newText);
-                        return true;
-                    }
-                });
+                //recyclerView.setHasFixedSize(true);
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
+                //swipeRefreshLayout.setRefreshing(false);
             }
         });
         RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
@@ -187,13 +236,6 @@ public class FirstFragment extends Fragment {
             holder.weight.setText(weight);
             holder.price.setText("BDT : "+price);
 
-//            holder.addCart.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//
-//                }
-//            });
-
             Picasso.get().load(hashMap.get("image")).into(holder.imageView, new Callback() {
                 @Override
                 public void onSuccess() {
@@ -220,7 +262,6 @@ public class FirstFragment extends Fragment {
             filterList.clear();
             if (query.isEmpty()){
                 filterList.addAll(itemList);
-                searchView.setVisibility(View.GONE);
             }else {
                 for (HashMap<String,String> item : itemList){
                     if (item.get("name").toLowerCase().contains(query)  || item.get("weight").toLowerCase().contains(query)){
