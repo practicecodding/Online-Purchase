@@ -1,5 +1,7 @@
 package com.hamidul.onlinepurchase;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -32,6 +34,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -39,6 +43,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -46,11 +51,16 @@ public class FirstFragment extends Fragment {
     RecyclerView recyclerView;
     LinearLayout progressBar;
     HashMap<String ,String > hashMap;
-    ArrayList arrayList = new ArrayList();
+    ArrayList<HashMap<String,String>> arrayList = new ArrayList();
+    ArrayList<ModelClass> cartList = new ArrayList<>();
     LottieAnimationView animationView;
     SwipeRefreshLayout swipeRefreshLayout;
     Toolbar toolbar;
     public static MyAdapter myAdapter;
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
+    Toast toast;
+    TextView textView;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -63,6 +73,8 @@ public class FirstFragment extends Fragment {
         animationView = myView.findViewById(R.id.animationView);
         //swipeRefreshLayout = myView.findViewById(R.id.swipeRefreshLayout);
         toolbar = myView.findViewById(R.id.toolBar);
+        sharedPreferences = getActivity().getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
 
         // Set the Toolbar as the ActionBar for this fragment
         AppCompatActivity activity = (AppCompatActivity) getActivity();
@@ -71,6 +83,7 @@ public class FirstFragment extends Fragment {
         }
 
         loadData();
+        cartUpdate();
 
 //        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 //            @Override
@@ -80,7 +93,7 @@ public class FirstFragment extends Fragment {
 //        });
 
         return myView;
-    }
+    }// onCreateView end
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -88,11 +101,6 @@ public class FirstFragment extends Fragment {
         inflater.inflate(R.menu.search_menu,menu);
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
-        MenuItem addCart = menu.findItem(R.id.addCart);
-
-        if (addCart==null){
-            Toast.makeText(getActivity(), "Clicked cart item", Toast.LENGTH_SHORT).show();
-        }
 
         if (searchItem!=null){
 
@@ -127,7 +135,7 @@ public class FirstFragment extends Fragment {
             MainActivity.backButton = "cart";
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.frameLayout,new SecondFragment());
+            fragmentTransaction.replace(R.id.frameLayout,new CartList());
             //fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
             return true;
@@ -228,6 +236,8 @@ public class FirstFragment extends Fragment {
 
             hashMap = (HashMap<String, String>) filterList.get(position);
 
+            String id = hashMap.get("id");
+            String image = hashMap.get("image");
             String name = hashMap.get("name");
             String weight = hashMap.get("weight");
             String price = hashMap.get("price");
@@ -235,8 +245,30 @@ public class FirstFragment extends Fragment {
             holder.name.setText(name);
             holder.weight.setText(weight);
             holder.price.setText("BDT : "+price);
+            holder.addCart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-            Picasso.get().load(hashMap.get("image")).into(holder.imageView, new Callback() {
+                    boolean b=true;
+
+                    for (ModelClass check : cartList){
+                        if (check.id.equals(id)){
+                            toastMessage("Previously added to cart");
+                            b = false;
+                        }
+                    }
+
+                    if(b){
+                        toastMessage("Added to cart");
+                        saveData(id,image,name,weight,price);
+                    }
+
+                }
+            });
+
+            Picasso.get()
+                    .load(image)
+                    .into(holder.imageView, new Callback() {
                 @Override
                 public void onSuccess() {
                     holder.lottieAnimationView.setVisibility(View.GONE);
@@ -276,4 +308,30 @@ public class FirstFragment extends Fragment {
 
     }// MyAdapter End
 
-}
+    private void saveData(String id, String image, String name, String weight, String price){
+        Gson gson = new Gson();
+        cartList.add(new ModelClass(id,image,name,weight,price));
+        String json = gson.toJson(cartList);
+        editor.putString("list",json);
+        editor.apply();
+    }
+
+    private void toastMessage(String message){
+        if (toast!=null) toast.cancel();
+        toast = Toast.makeText(getActivity(),message,Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
+    private void cartUpdate(){
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("list",null);
+        Type type = new TypeToken<ArrayList<ModelClass>>(){
+        }.getType();
+        cartList = gson.fromJson(json,type);
+        if (cartList == null){
+            cartList = new ArrayList<>();
+        }
+
+    }
+
+}// Fragment End
