@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CartList extends Fragment {
-
     ArrayList<ModelClass> cartList = new ArrayList<>();
     SharedPreferences sharedPreferences;
     GridView gridView;
