@@ -18,20 +18,38 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CartList extends Fragment {
-    ArrayList<ModelClass> cartList = new ArrayList<>();
+    ArrayList<HashMap<String,String>> cartList = new ArrayList<>();
+    ArrayList<HashMap<String,String>> arrayList = new ArrayList<>();
+    HashMap<String,String> hashMap;
     SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
     GridView gridView;
     LinearLayout full,empty;
+    String string="";
+    LinearLayout progressBar;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View myView = inflater.inflate(R.layout.fragment_cart_list, container, false);
@@ -39,13 +57,12 @@ public class CartList extends Fragment {
         gridView = myView.findViewById(R.id.gridView);
         full = myView.findViewById(R.id.full);
         empty = myView.findViewById(R.id.empty);
+        progressBar = myView.findViewById(R.id.progressBar);
         sharedPreferences = getActivity().getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
 
         loadCartData();
-
-        MyAdapter myAdapter = new MyAdapter();
-        gridView.setAdapter(myAdapter);
-
+        loadData();
 
         return myView;
     }
@@ -54,7 +71,7 @@ public class CartList extends Fragment {
         LayoutInflater layoutInflater;
         @Override
         public int getCount() {
-            return cartList.size();
+            return arrayList.size();
         }
 
         @Override
@@ -70,25 +87,44 @@ public class CartList extends Fragment {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             layoutInflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View cartView = layoutInflater.inflate(R.layout.item,parent,false);
+            View cartView = layoutInflater.inflate(R.layout.cart_item,parent,false);
 
             TextView tvName = cartView.findViewById(R.id.tvName);
             TextView tvWeight = cartView.findViewById(R.id.tvWeight);
             TextView tvPrice = cartView.findViewById(R.id.tvPrice);
-            LinearLayout addCart = cartView.findViewById(R.id.addCart);
             ImageView imageView = cartView.findViewById(R.id.imageView);
             LottieAnimationView lottieAnimationView = cartView.findViewById(R.id.lottieAnimationView);
+            LinearLayout delete = cartView.findViewById(R.id.delete);
 
-            addCart.setVisibility(View.GONE);
+            hashMap = (HashMap<String, String>) arrayList.get(position);
 
-            String image = cartList.get(position).image;
-            String name = cartList.get(position).name;
-            String weight = cartList.get(position).weight;
-            String price = cartList.get(position).price;
+            String image = hashMap.get("image");
+            String name = hashMap.get("name");
+            String weight = hashMap.get("weight");
+            String price = hashMap.get("price");
 
             tvName.setText(name);
             tvWeight.setText(weight);
             tvPrice.setText("BDT : "+price);
+
+            delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    arrayList.remove(position);
+                    cartList.remove(position);
+                    Gson gson = new Gson();
+                    String json = gson.toJson(cartList);
+                    editor.putString("cartList",json);
+                    editor.apply();
+                    if (arrayList==null || arrayList.size()<1){
+                        arrayList = new ArrayList<>();
+                        empty.setVisibility(View.VISIBLE);
+                        full.setVisibility(View.GONE);
+                    }
+                    MyAdapter myAdapter = new MyAdapter();
+                    gridView.setAdapter(myAdapter);
+                }
+            });
 
             Picasso.get()
                     .load(image)
@@ -106,15 +142,14 @@ public class CartList extends Fragment {
                         }
                     });
 
-
             return cartView;
         }
     }
 
     public void loadCartData(){
         Gson gson = new Gson();
-        String json = sharedPreferences.getString("list",null);
-        Type type = new TypeToken<ArrayList<ModelClass>>(){
+        String json = sharedPreferences.getString("cartList",null);
+        Type type = new TypeToken<ArrayList<HashMap<String,String>>>(){
         }.getType();
         cartList = gson.fromJson(json,type);
         if (cartList==null){
@@ -122,6 +157,61 @@ public class CartList extends Fragment {
             empty.setVisibility(View.VISIBLE);
             full.setVisibility(View.GONE);
         }
+    }
+
+    public void loadData (){
+        arrayList = new ArrayList<>();
+        progressBar.setVisibility(View.VISIBLE);
+        for (int x = 0; x<cartList.size(); x++){
+            hashMap = cartList.get(x);
+            string = string+hashMap.get("id")+",";
+        }
+
+        String url = "https://smhamidulcodding.000webhostapp.com/ecommerce_app/cart_item/cart_item.php?search="+string+"0";
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                if (response.length()<1){
+                    empty.setVisibility(View.VISIBLE);
+                    full.setVisibility(View.GONE);
+                }
+                progressBar.setVisibility(View.GONE);
+                for (int x = 0; x<response.length();x++){
+                    try {
+                        JSONObject jsonObject = response.getJSONObject(x);
+                        String image = jsonObject.getString("image");
+                        String name = jsonObject.getString("name");
+                        String weight = jsonObject.getString("weight");
+                        String price = jsonObject.getString("price");
+
+                        hashMap = new HashMap<>();
+                        hashMap.put("image",image);
+                        hashMap.put("name",name);
+                        hashMap.put("weight",weight);
+                        hashMap.put("price",price);
+                        arrayList.add(hashMap);
+
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }// for loop end
+
+                MyAdapter myAdapter = new MyAdapter();
+                gridView.setAdapter(myAdapter);
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
+            }
+        });
+
+        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+        jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        requestQueue.add(jsonArrayRequest);
 
     }
 

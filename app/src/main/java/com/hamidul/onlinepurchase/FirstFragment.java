@@ -52,7 +52,7 @@ public class FirstFragment extends Fragment {
     LinearLayout progressBar;
     HashMap<String ,String > hashMap;
     ArrayList<HashMap<String,String>> arrayList = new ArrayList();
-    ArrayList<ModelClass> cartList = new ArrayList<>();
+    ArrayList<HashMap<String,String>> cartList = new ArrayList<>();
     LottieAnimationView animationView;
     SwipeRefreshLayout swipeRefreshLayout;
     Toolbar toolbar;
@@ -162,6 +162,7 @@ public class FirstFragment extends Fragment {
                         String image = jsonObject.getString("image");
                         String name = jsonObject.getString("name");
                         String weight = jsonObject.getString("weight");
+                        String tp = jsonObject.getString("tp");
                         String price = jsonObject.getString("price");
 
                         hashMap = new HashMap<>();
@@ -169,6 +170,7 @@ public class FirstFragment extends Fragment {
                         hashMap.put("image",image);
                         hashMap.put("name",name);
                         hashMap.put("weight",weight);
+                        hashMap.put("tp",tp);
                         hashMap.put("price",price);
                         arrayList.add(hashMap);
 
@@ -215,7 +217,7 @@ public class FirstFragment extends Fragment {
 
         private class myViewHolder extends RecyclerView.ViewHolder{
             ImageView imageView;
-            TextView name,weight,price;
+            TextView name,weight,tp,price;
             LottieAnimationView lottieAnimationView;
             LinearLayout addCart;
             public myViewHolder(@NonNull View itemView) {
@@ -224,6 +226,7 @@ public class FirstFragment extends Fragment {
                 imageView = itemView.findViewById(R.id.imageView);
                 name = itemView.findViewById(R.id.tvName);
                 weight = itemView.findViewById(R.id.tvWeight);
+                tp = itemView.findViewById(R.id.tvTp);
                 price = itemView.findViewById(R.id.tvPrice);
                 lottieAnimationView = itemView.findViewById(R.id.lottieAnimationView);
                 addCart = itemView.findViewById(R.id.addCart);
@@ -240,19 +243,21 @@ public class FirstFragment extends Fragment {
             String image = hashMap.get("image");
             String name = hashMap.get("name");
             String weight = hashMap.get("weight");
+            String tp = hashMap.get("tp");
             String price = hashMap.get("price");
 
             holder.name.setText(name);
-            holder.weight.setText(weight);
-            holder.price.setText("BDT : "+price);
+            holder.weight.setText("Weight : "+weight);
+            holder.tp.setText("TP : "+tp);
+            holder.price.setText("MRP : "+price);
             holder.addCart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
                     boolean b=true;
 
-                    for (ModelClass check : cartList){
-                        if (check.id.equals(id)){
+                    for (HashMap<String,String> check : cartList){
+                        if (check.get("id").equals(id)){
                             toastMessage("Previously added to cart");
                             b = false;
                         }
@@ -260,7 +265,7 @@ public class FirstFragment extends Fragment {
 
                     if(b){
                         toastMessage("Added to cart");
-                        saveData(id,image,name,weight,price);
+                        saveData(id);
                     }
 
                 }
@@ -308,11 +313,13 @@ public class FirstFragment extends Fragment {
 
     }// MyAdapter End
 
-    private void saveData(String id, String image, String name, String weight, String price){
+    private void saveData(String id){
         Gson gson = new Gson();
-        cartList.add(new ModelClass(id,image,name,weight,price));
+        hashMap = new HashMap<>();
+        hashMap.put("id",id);
+        cartList.add(hashMap);
         String json = gson.toJson(cartList);
-        editor.putString("list",json);
+        editor.putString("cartList",json);
         editor.apply();
     }
 
@@ -324,8 +331,8 @@ public class FirstFragment extends Fragment {
 
     private void cartUpdate(){
         Gson gson = new Gson();
-        String json = sharedPreferences.getString("list",null);
-        Type type = new TypeToken<ArrayList<ModelClass>>(){
+        String json = sharedPreferences.getString("cartList",null);
+        Type type = new TypeToken<ArrayList<HashMap<String,String>>>(){
         }.getType();
         cartList = gson.fromJson(json,type);
         if (cartList == null){
