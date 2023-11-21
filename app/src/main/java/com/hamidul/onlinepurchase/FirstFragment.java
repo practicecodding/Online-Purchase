@@ -60,7 +60,6 @@ public class FirstFragment extends Fragment {
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
     Toast toast;
-    TextView textView;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -132,7 +131,7 @@ public class FirstFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId()==R.id.addCart){
-            MainActivity.backButton = "cart";
+            MainActivity.backButton = true;
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.frameLayout,new CartList());
@@ -226,7 +225,7 @@ public class FirstFragment extends Fragment {
                 imageView = itemView.findViewById(R.id.imageView);
                 name = itemView.findViewById(R.id.tvName);
                 weight = itemView.findViewById(R.id.tvWeight);
-                tp = itemView.findViewById(R.id.tvTp);
+                //tp = itemView.findViewById(R.id.tvTp);
                 price = itemView.findViewById(R.id.tvPrice);
                 lottieAnimationView = itemView.findViewById(R.id.lottieAnimationView);
                 addCart = itemView.findViewById(R.id.addCart);
@@ -248,7 +247,7 @@ public class FirstFragment extends Fragment {
 
             holder.name.setText(name);
             holder.weight.setText("Weight : "+weight);
-            holder.tp.setText("TP : "+tp);
+            //holder.tp.setText("TP : "+tp);
             holder.price.setText("MRP : "+price);
             holder.addCart.setOnClickListener(new View.OnClickListener() {
                 @Override

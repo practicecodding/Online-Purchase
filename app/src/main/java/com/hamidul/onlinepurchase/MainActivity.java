@@ -51,7 +51,7 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     BroadcastReceiver broadcastReceiver;
-    public static String backButton;
+    public static boolean backButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
                 fragmentTransaction.commit();
             }
 
-
         }
 
         public boolean isConnected(){
@@ -121,15 +120,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (backButton.contains("cart")){
+        if (backButton){
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.frameLayout,new FirstFragment());
             //fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
-            backButton="";
+            backButton=false;
         }else {
             super.onBackPressed();
         }
     }
+
 }

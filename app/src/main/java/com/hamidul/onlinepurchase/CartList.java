@@ -152,7 +152,7 @@ public class CartList extends Fragment {
         Type type = new TypeToken<ArrayList<HashMap<String,String>>>(){
         }.getType();
         cartList = gson.fromJson(json,type);
-        if (cartList==null){
+        if (cartList==null || cartList.size()<1){
             cartList = new ArrayList<>();
             empty.setVisibility(View.VISIBLE);
             full.setVisibility(View.GONE);
@@ -172,10 +172,6 @@ public class CartList extends Fragment {
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                if (response.length()<1){
-                    empty.setVisibility(View.VISIBLE);
-                    full.setVisibility(View.GONE);
-                }
                 progressBar.setVisibility(View.GONE);
                 for (int x = 0; x<response.length();x++){
                     try {

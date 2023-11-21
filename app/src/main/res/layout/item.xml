@@ -58,15 +58,15 @@
                 android:layout_marginTop="5dp"
                 />
 
-            <TextView
-                android:id="@+id/tvTp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                android:textColor="@color/black"
-                android:layout_marginTop="5dp"
-                />
+<!--            <TextView-->
+<!--                android:id="@+id/tvTp"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:textSize="18sp"-->
+<!--                android:textStyle="normal"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:layout_marginTop="5dp"-->
+<!--                />-->
 
             <TextView
                 android:id="@+id/tvPrice"
