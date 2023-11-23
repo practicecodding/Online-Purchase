@@ -11,4 +11,9 @@
         <item name="android:textCursorDrawable">@drawable/cursor</item>
     </style>
 
+    <style name="userCursor" parent="">
+        <item name="colorControlActivated">#00BCD4</item>
+    </style>
+
+
 </resources>

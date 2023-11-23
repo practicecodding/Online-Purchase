@@ -1,21 +1,29 @@
 package com.hamidul.onlinepurchase;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.health.connect.datatypes.StepsCadenceRecord;
 import android.media.Image;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.android.volley.DefaultRetryPolicy;
@@ -24,6 +32,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -95,9 +104,11 @@ public class CartList extends Fragment {
             ImageView imageView = cartView.findViewById(R.id.imageView);
             LottieAnimationView lottieAnimationView = cartView.findViewById(R.id.lottieAnimationView);
             LinearLayout delete = cartView.findViewById(R.id.delete);
+            LinearLayout orderNow = cartView.findViewById(R.id.orderNow);
 
             hashMap = (HashMap<String, String>) arrayList.get(position);
 
+            String id = hashMap.get("id");
             String image = hashMap.get("image");
             String name = hashMap.get("name");
             String weight = hashMap.get("weight");
@@ -125,6 +136,107 @@ public class CartList extends Fragment {
                     gridView.setAdapter(myAdapter);
                 }
             });
+
+            orderNow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    View view = LayoutInflater.from(getActivity()).inflate(R.layout.user_details,null);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setView(view);
+
+                    EditText edName = view.findViewById(R.id.edName);
+                    EditText edNumber = view.findViewById(R.id.edNumber);
+                    EditText edEmail = view.findViewById(R.id.edEmail);
+                    EditText edAddress = view.findViewById(R.id.edAddress);
+                    EditText edQuantity = view.findViewById(R.id.edQuantity);
+                    Button buttonSubmit = view.findViewById(R.id.buttonSubmit);
+
+                    final AlertDialog alertDialog = builder.create();
+
+                    TextWatcher watcher = new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                            String name = edName.getText().toString();
+                            String number = edNumber.getText().toString();
+                            String email = edEmail.getText().toString();
+                            String address = edAddress.getText().toString();
+                            String quantity = edQuantity.getText().toString();
+
+                            buttonSubmit.setEnabled(!name.isEmpty() && number.length()==11 && !email.isEmpty() && !address.isEmpty() && !quantity.isEmpty());
+
+
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+
+                        }
+                    };
+
+                    edName.addTextChangedListener(watcher);
+                    edNumber.addTextChangedListener(watcher);
+                    edEmail.addTextChangedListener(watcher);
+                    edAddress.addTextChangedListener(watcher);
+                    edQuantity.addTextChangedListener(watcher);
+
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    alertDialog.setCancelable(true);
+                    alertDialog.show();
+
+                    buttonSubmit.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String customerName = edName.getText().toString();
+                            String customerNumber = edNumber.getText().toString();
+                            String customerEmail = edEmail.getText().toString();
+                            String customerAddress = edAddress.getText().toString();
+                            String productQuantity = edQuantity.getText().toString();
+
+                            String url = "https://smhamidulcodding.000webhostapp.com/ecommerce_app/cart_item/customer_data.php?product_id="+id+"&name="+customerName+"&number="+customerNumber+"&email="+
+                                    customerEmail+"&address="+customerAddress+"&quantity="+productQuantity;
+
+                            StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    Toast.makeText(getActivity(), response, Toast.LENGTH_SHORT).show();
+                                }
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+
+                                }
+                            });
+
+                            RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+                            requestQueue.add(stringRequest);
+
+                            arrayList.remove(position);
+                            cartList.remove(position);
+                            Gson gson = new Gson();
+                            String json = gson.toJson(cartList);
+                            editor.putString("cartList",json);
+                            editor.apply();
+                            if (arrayList==null || arrayList.size()<1){
+                                arrayList = new ArrayList<>();
+                                empty.setVisibility(View.VISIBLE);
+                                full.setVisibility(View.GONE);
+                            }
+                            MyAdapter myAdapter = new MyAdapter();
+                            gridView.setAdapter(myAdapter);
+
+                            alertDialog.cancel();
+
+                        }
+                    });
+
+                }
+            });//===================================================================================
 
             Picasso.get()
                     .load(image)
@@ -176,12 +288,14 @@ public class CartList extends Fragment {
                 for (int x = 0; x<response.length();x++){
                     try {
                         JSONObject jsonObject = response.getJSONObject(x);
+                        String id = jsonObject.getString("id");
                         String image = jsonObject.getString("image");
                         String name = jsonObject.getString("name");
                         String weight = jsonObject.getString("weight");
                         String price = jsonObject.getString("price");
 
                         hashMap = new HashMap<>();
+                        hashMap.put("id",id);
                         hashMap.put("image",image);
                         hashMap.put("name",name);
                         hashMap.put("weight",weight);
@@ -212,6 +326,56 @@ public class CartList extends Fragment {
     }
 
 
+    private void loadUserDetails (){
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.user_details,null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(view);
+
+        EditText edName = view.findViewById(R.id.edName);
+        EditText edNumber = view.findViewById(R.id.edNumber);
+        EditText edEmail = view.findViewById(R.id.edEmail);
+        EditText edAddress = view.findViewById(R.id.edAddress);
+        EditText edQuantity = view.findViewById(R.id.edQuantity);
+        Button buttonSubmit = view.findViewById(R.id.buttonSubmit);
+
+        final AlertDialog alertDialog = builder.create();
+
+        TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String name = edName.getText().toString();
+                String number = edNumber.getText().toString();
+                String email = edEmail.getText().toString();
+                String address = edAddress.getText().toString();
+                String quantity = edQuantity.getText().toString();
+
+                buttonSubmit.setEnabled(!name.isEmpty() && number.length()==11 && !email.isEmpty() && !address.isEmpty() && !quantity.isEmpty());
+
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+
+        edName.addTextChangedListener(watcher);
+        edNumber.addTextChangedListener(watcher);
+        edEmail.addTextChangedListener(watcher);
+        edAddress.addTextChangedListener(watcher);
+        edQuantity.addTextChangedListener(watcher);
+
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alertDialog.setCancelable(true);
+        alertDialog.show();
+
+    }
 
 
 }
