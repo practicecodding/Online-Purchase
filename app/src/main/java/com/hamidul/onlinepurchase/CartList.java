@@ -170,7 +170,6 @@ public class CartList extends Fragment {
 
                             buttonSubmit.setEnabled(!name.isEmpty() && number.length()==11 && !email.isEmpty() && !address.isEmpty() && !quantity.isEmpty());
 
-
                         }
 
                         @Override
@@ -356,7 +355,6 @@ public class CartList extends Fragment {
 
                 buttonSubmit.setEnabled(!name.isEmpty() && number.length()==11 && !email.isEmpty() && !address.isEmpty() && !quantity.isEmpty());
 
-
             }
 
             @Override
@@ -376,6 +374,5 @@ public class CartList extends Fragment {
         alertDialog.show();
 
     }
-
 
 }
