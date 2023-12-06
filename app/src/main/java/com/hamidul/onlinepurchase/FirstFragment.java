@@ -44,6 +44,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -60,6 +61,7 @@ public class FirstFragment extends Fragment {
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
     Toast toast;
+    DecimalFormat decimalFormat = new DecimalFormat("#.##");
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -242,8 +244,17 @@ public class FirstFragment extends Fragment {
             String image = hashMap.get("image");
             String name = hashMap.get("name");
             String weight = hashMap.get("weight");
-            String tp = hashMap.get("tp");
             String price = hashMap.get("price");
+
+            if (name.contains("Pringles")){
+                float tp = (float) (Float.parseFloat(price)/1.12);
+                holder.price.setText("MRP : "+price+" TK\n\nTP : "+decimalFormat.format(tp)+" TK");
+            }
+            else {
+                float tp = (float) (Float.parseFloat(price)/1.15);
+                holder.price.setText("MRP : "+price+" TK\n\nTP : "+decimalFormat.format(tp)+" TK");
+            }
+
 
             holder.name.setText(name);
             holder.weight.setText("Weight : "+weight);

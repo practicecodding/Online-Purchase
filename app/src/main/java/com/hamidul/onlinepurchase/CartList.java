@@ -168,7 +168,7 @@ public class CartList extends Fragment {
                             String address = edAddress.getText().toString();
                             String quantity = edQuantity.getText().toString();
 
-                            buttonSubmit.setEnabled(!name.isEmpty() && number.length()==11 && !email.isEmpty() && !address.isEmpty() && !quantity.isEmpty());
+                            buttonSubmit.setEnabled(!name.isEmpty() && number.length()==11 && !address.isEmpty() && !quantity.isEmpty());
 
                         }
 
