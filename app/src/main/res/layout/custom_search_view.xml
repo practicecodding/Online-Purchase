@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="35dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchView"
+        android:theme="@style/CursorDesign"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        app:queryHint="Search Name / Gram"
+        app:iconifiedByDefault="false"
+        app:searchIcon="@null"
+        app:queryBackground="@null"
+        android:background="@drawable/custom_search"
+        app:closeIcon="@drawable/baseline_close_24"
+        />
+
+</FrameLayout>
