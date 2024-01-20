@@ -248,18 +248,18 @@ public class FirstFragment extends Fragment {
 
             if (name.contains("Pringles")){
                 float tp = (float) (Float.parseFloat(price)/1.12);
-                holder.price.setText("MRP : "+price+" TK\n\nTP : "+decimalFormat.format(tp)+" TK");
+                holder.price.setText("MRP : "+price+" TK\nTP : "+decimalFormat.format(tp)+" TK");
             }
             else {
                 float tp = (float) (Float.parseFloat(price)/1.15);
-                holder.price.setText("MRP : "+price+" TK\n\nTP : "+decimalFormat.format(tp)+" TK");
+                holder.price.setText("MRP : "+price+" TK\nTP : "+decimalFormat.format(tp)+" TK");
             }
 
 
             holder.name.setText(name);
             holder.weight.setText("Weight : "+weight);
             //holder.tp.setText("TP : "+tp);
-            holder.price.setText("MRP : "+price);
+            //holder.price.setText("MRP : "+price);
             holder.addCart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
