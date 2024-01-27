@@ -2,6 +2,9 @@ package com.hamidul.onlinepurchase;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -15,6 +18,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -192,7 +199,7 @@ public class FirstFragment extends Fragment {
                 //swipeRefreshLayout.setRefreshing(false);
             }
         });
-        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+            RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
         jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         requestQueue.add(jsonArrayRequest);
 
@@ -202,6 +209,7 @@ public class FirstFragment extends Fragment {
 
         ArrayList<HashMap<String,String>> itemList;
         ArrayList<HashMap<String,String>> filterList;
+        String queryText = "";
         public MyAdapter (ArrayList<HashMap<String,String>> itemList){
             this.itemList = itemList;
             this.filterList = new ArrayList<>(itemList);
@@ -255,8 +263,35 @@ public class FirstFragment extends Fragment {
                 holder.price.setText("MRP : "+price+" TK\nTP : "+decimalFormat.format(tp)+" TK");
             }
 
+            if (queryText!=null && !queryText.isEmpty()){
 
-            holder.name.setText(name);
+                int starPos = name.toLowerCase().indexOf(queryText.toLowerCase());
+                int endPos = starPos+queryText.length();
+
+                if (starPos!= -1){
+
+//                    Spannable spannable = new SpannableString(name);
+//                    ColorStateList colorStateList = new ColorStateList(new int[][] {new int[] {}},new int[] {Color.BLUE});
+//                    TextAppearanceSpan textAppearanceSpan = new TextAppearanceSpan(null, Typeface.BOLD,-1,colorStateList,null);
+//                    spannable.setSpan(textAppearanceSpan,starPos,endPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    Spannable spannable = new SpannableString(name);
+                    ColorStateList colorStateList = new ColorStateList(new int[][] {new int[] {}},new int[] {Color.parseColor("#009688")});
+                    TextAppearanceSpan textAppearanceSpan = new TextAppearanceSpan(null, Typeface.NORMAL,-1,colorStateList,null);
+                    spannable.setSpan(textAppearanceSpan,starPos,endPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    holder.name.setText(spannable);
+
+
+                }else {
+                    holder.name.setText(name);
+                }
+
+            }else {
+                holder.name.setText(name);
+            }
+
+//            holder.name.setText(name);
             holder.weight.setText("Weight : "+weight);
             //holder.tp.setText("TP : "+tp);
             //holder.price.setText("MRP : "+price);
@@ -308,8 +343,12 @@ public class FirstFragment extends Fragment {
             query = query.toLowerCase();
             filterList.clear();
             if (query.isEmpty()){
+                queryText = "";
                 filterList.addAll(itemList);
             }else {
+
+                queryText = query.toString();
+
                 for (HashMap<String,String> item : itemList){
                     if (item.get("name").toLowerCase().contains(query)  || item.get("weight").toLowerCase().contains(query)){
                         filterList.add(item);
