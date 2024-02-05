@@ -55,6 +55,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import io.github.muddz.styleabletoast.StyleableToast;
+
 public class FirstFragment extends Fragment {
     RecyclerView recyclerView;
     LinearLayout progressBar;
@@ -270,11 +272,6 @@ public class FirstFragment extends Fragment {
 
                 if (starPos!= -1){
 
-//                    Spannable spannable = new SpannableString(name);
-//                    ColorStateList colorStateList = new ColorStateList(new int[][] {new int[] {}},new int[] {Color.BLUE});
-//                    TextAppearanceSpan textAppearanceSpan = new TextAppearanceSpan(null, Typeface.BOLD,-1,colorStateList,null);
-//                    spannable.setSpan(textAppearanceSpan,starPos,endPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
                     Spannable spannable = new SpannableString(name);
                     ColorStateList colorStateList = new ColorStateList(new int[][] {new int[] {}},new int[] {Color.parseColor("#009688")});
                     TextAppearanceSpan textAppearanceSpan = new TextAppearanceSpan(null, Typeface.NORMAL,-1,colorStateList,null);
@@ -282,17 +279,34 @@ public class FirstFragment extends Fragment {
 
                     holder.name.setText(spannable);
 
-
                 }else {
                     holder.name.setText(name);
                 }
 
+                int wetStartPos = weight.toLowerCase().indexOf(queryText.toLowerCase());
+                int wetEndPos = wetStartPos+queryText.length();
+
+                if (wetStartPos!=-1){
+
+                    Spannable spannable = new SpannableString(weight);
+                    ColorStateList colorStateList = new ColorStateList(new int[][]{new int[]{}},new int[]{Color.YELLOW});
+                    TextAppearanceSpan textAppearanceSpan = new TextAppearanceSpan(null,Typeface.NORMAL,-1,colorStateList,null);
+                    spannable.setSpan(textAppearanceSpan,wetStartPos,wetEndPos,Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    holder.weight.setText("Weight : "+spannable);
+
+                }else {
+                    holder.weight.setText("Weight : "+weight);
+                }
+
+
             }else {
                 holder.name.setText(name);
+                holder.weight.setText("Weight : "+weight);
             }
 
 //            holder.name.setText(name);
-            holder.weight.setText("Weight : "+weight);
+//            holder.weight.setText("Weight : "+weight);
             //holder.tp.setText("TP : "+tp);
             //holder.price.setText("MRP : "+price);
             holder.addCart.setOnClickListener(new View.OnClickListener() {
@@ -303,13 +317,15 @@ public class FirstFragment extends Fragment {
 
                     for (HashMap<String,String> check : cartList){
                         if (check.get("id").equals(id)){
-                            toastMessage("Previously added to cart");
+//                            toastMessage("Previously added to cart");
+                            StyleableToast.makeText(getActivity(), "Previously added to cart", Toast.LENGTH_LONG, R.style.mytoast).show();
                             b = false;
                         }
                     }
 
                     if(b){
                         toastMessage("Added to cart");
+                        StyleableToast.makeText(getActivity(), "Added to cart", Toast.LENGTH_LONG, R.style.mytoast).show();
                         saveData(id);
                     }
 

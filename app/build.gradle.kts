@@ -46,4 +46,5 @@ dependencies {
     implementation("com.airbnb.android:lottie:6.1.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("io.github.muddz:styleabletoast:2.4.0")
 }
