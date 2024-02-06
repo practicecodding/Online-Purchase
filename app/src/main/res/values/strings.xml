@@ -15,7 +15,7 @@
         <item name="stIconStart">@drawable/add_to_cart_icon</item>
 <!--        <item name="stIconEnd">@drawable/ic</item>-->
         <item name="stLength">LONG</item> LONG or SHORT
-        <item name="stGravity">center</item> top or center
+<!--        <item name="stGravity">center</item> top or center-->
         <item name="stRadius">5dp</item>
     </style>
 

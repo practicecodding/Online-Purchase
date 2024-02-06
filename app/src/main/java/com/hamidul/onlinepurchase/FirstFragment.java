@@ -71,6 +71,7 @@ public class FirstFragment extends Fragment {
     SharedPreferences.Editor editor;
     Toast toast;
     DecimalFormat decimalFormat = new DecimalFormat("#.##");
+    StyleableToast styleableToast;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -318,14 +319,18 @@ public class FirstFragment extends Fragment {
                     for (HashMap<String,String> check : cartList){
                         if (check.get("id").equals(id)){
 //                            toastMessage("Previously added to cart");
-                            StyleableToast.makeText(getActivity(), "Previously added to cart", Toast.LENGTH_LONG, R.style.mytoast).show();
+                            if (styleableToast!=null) styleableToast.cancel();
+                            styleableToast = StyleableToast.makeText(getActivity(), "Previously added to cart", Toast.LENGTH_LONG, R.style.mytoast);
+                            styleableToast.show();
                             b = false;
                         }
                     }
 
                     if(b){
-                        toastMessage("Added to cart");
-                        StyleableToast.makeText(getActivity(), "Added to cart", Toast.LENGTH_LONG, R.style.mytoast).show();
+//                        toastMessage("Added to cart");
+                        if (styleableToast!=null) styleableToast.cancel();
+                        styleableToast = StyleableToast.makeText(getActivity(), "Added to cart", Toast.LENGTH_LONG, R.style.mytoast);
+                        styleableToast.show();
                         saveData(id);
                     }
 
